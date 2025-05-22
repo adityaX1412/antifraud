@@ -10,7 +10,7 @@ import pickle
 from sklearn.model_selection import StratifiedKFold, train_test_split
 import torch.nn as nn
 from sklearn.preprocessing import LabelEncoder, QuantileTransformer
-from dgl.dataloading.dataloader import NodeDataLoader
+from dgl.dataloading.dataloader import DataLoader
 from dgl.dataloading import MultiLayerNeighborSampler
 from torch.optim.lr_scheduler import MultiStepLR
 from .gtan_model import GraphAttnModel
