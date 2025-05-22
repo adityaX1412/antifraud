@@ -40,7 +40,7 @@ def gtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features):
         trn_ind, val_ind = torch.from_numpy(np.array(train_idx)[trn_idx]).long().to(
             device), torch.from_numpy(np.array(train_idx)[val_idx]).long().to(device)
 
-        train_sampler = MultiLayerFullNeighborSampler(args['n_layers'])
+        train_sampler = MultiLayerNeighborSampler(args['n_layers'])
         train_dataloader = NodeDataLoader(graph,
                                           trn_ind,
                                           train_sampler,
@@ -51,7 +51,7 @@ def gtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features):
                                           drop_last=False,
                                           num_workers=0
                                           )
-        val_sampler = MultiLayerFullNeighborSampler(args['n_layers'])
+        val_sampler = MultiLayerNeighborSampler(args['n_layers'])
         val_dataloader = NodeDataLoader(graph,
                                         val_ind,
                                         val_sampler,
@@ -176,7 +176,7 @@ def gtan_main(feat_df, graph, train_idx, test_idx, labels, args, cat_features):
                 break
         print("Best val_loss is: {:.7f}".format(earlystoper.best_cv))
         test_ind = torch.from_numpy(np.array(test_idx)).long().to(device)
-        test_sampler = MultiLayerFullNeighborSampler(args['n_layers'])
+        test_sampler = MultiLayerNeighborSampler(args['n_layers'])
         test_dataloader = NodeDataLoader(graph,
                                          test_ind,
                                          test_sampler,
