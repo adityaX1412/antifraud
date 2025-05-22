@@ -232,6 +232,7 @@ def load_gtan_data(dataset: str, test_size: float):
     :param test_size: the size of test set
     :returns: feature, label, graph, category features
     """
+    dataset = "amazon"
     # prefix = './antifraud/data/'
     prefix = os.path.join(os.path.dirname(__file__), "..", "..", "data/")
     if dataset == "S-FFSD":
