@@ -138,7 +138,7 @@ def main(args):
     elif args['method'] == 'gtan':
         from methods.gtan.gtan_main import gtan_main, load_gtan_data
         feat_data, labels, train_idx, test_idx, g, cat_features = load_gtan_data(
-            args['dataset'], args['test_size'])
+            "amazon", args['test_size'])
         gtan_main(
             feat_data, g, train_idx, test_idx, labels, args, cat_features)
     elif args['method'] == 'rgtan':
