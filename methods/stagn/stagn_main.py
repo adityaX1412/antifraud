@@ -193,4 +193,4 @@ def load_stagn_data(args: dict):
             feat_data.to_numpy()).to(torch.float32)
         graph_path = prefix + "graph-{}.bin".format(dataset)
         dgl.data.utils.save_graphs(graph_path, [g])
-     return features, labels, g
+    return features, labels, g
