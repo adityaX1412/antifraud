@@ -123,7 +123,7 @@ def main(args):
 
     elif args['method'] == 'stagn':
         from methods.stagn.stagn_main import stagn_main, load_stagn_data
-        features, labels, g = load_stagn_data(args)
+        features, labels, g = load_stagn_data("amazon",args)
         stagn_main(
             features,
             labels,
