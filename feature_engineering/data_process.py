@@ -276,6 +276,7 @@ if __name__ == "__main__":
     # """
     #     For S-FFSD dataset
     # """
+    """
     print(f"processing S-FFSD data...")
     data = pd.read_csv(os.path.join(DATADIR, 'S-FFSD.csv'))
     data = featmap_gen(data.reset_index(drop=True))
@@ -314,10 +315,10 @@ if __name__ == "__main__":
         labels.to_numpy()).to(torch.long)
     g.ndata['feat'] = torch.from_numpy(
         feat_data.to_numpy()).to(torch.float32)
-    dgl.data.utils.save_graphs(DATADIR + "graph-S-FFSD.bin", [g])
+    dgl.data.utils.save_graphs(DATADIR + "graph-S-FFSD.bin", [g])"""
 
     # generate neighbor riskstat features
-    for file_name in ['S-FFSD', 'yelp', 'amazon']:
+    for file_name in ['yelp', 'amazon']: 
         print(
             f"Generating neighbor risk-aware features for {file_name} dataset...")
         graph = dgl.load_graphs(DATADIR + "graph-" + file_name + ".bin")[0][0]
