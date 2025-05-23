@@ -107,36 +107,90 @@ def stagn_main(
 
 
 def load_stagn_data(args: dict):
-    # load S-FFSD dataset for base models
-    data_path = "data/S-FFSD.csv"
-    feat_df = pd.read_csv(data_path)
-    train_size = 1 - args['test_size']
-    method = args['method']
-    # ICONIP16 & AAAI20 requires higher dimensional data
-    if os.path.exists("data/features.npy"):
-        features, labels = np.load(
-            "data/features.npy"), np.load("data/labels.npy")
-    else:
-        features, labels = span_data_2d(feat_df)
-        np.save("data/features.npy", features)
-        np.save("data/labels.npy", labels)
+    if dataset == "S-FFSD":
+        # load S-FFSD dataset for base models
+        data_path = "data/S-FFSD.csv"
+        feat_df = pd.read_csv(data_path)
+        train_size = 1 - args['test_size']
+        method = args['method']
+        # ICONIP16 & AAAI20 requires higher dimensional data
+        if os.path.exists("data/features.npy"):
+            features, labels = np.load(
+                "data/features.npy"), np.load("data/labels.npy")
+        else:
+            features, labels = span_data_2d(feat_df)
+            np.save("data/features.npy", features)
+            np.save("data/labels.npy", labels)
+    
+        sampled_df = feat_df[feat_df['Labels'] != 2]
+        sampled_df = sampled_df.reset_index(drop=True)
+    
+        all_nodes = pd.concat([sampled_df['Source'], sampled_df['Target']]).unique()
+        encoder = LabelEncoder().fit(all_nodes)  
+        encoded_source = encoder.transform(sampled_df['Source'])
+        encoded_tgt = encoder.transform(sampled_df['Target'])  
+    
+        loc_enc = OneHotEncoder()
+        loc_feature = np.array(loc_enc.fit_transform(
+            sampled_df['Location'].to_numpy()[:, np.newaxis]).todense())
+        loc_feature = np.hstack(
+            [zscore(sampled_df['Amount'].to_numpy())[:, np.newaxis], loc_feature])
+    
+        g = dgl.DGLGraph()
+        g.add_edges(encoded_source, encoded_tgt, data={
+                    "feat": torch.from_numpy(loc_feature).to(torch.float32)})
+        # g = dgl.add_self_loop(g)
+    elif dataset == "yelp":
+        cat_features = []
+        data_file = loadmat(prefix + 'YelpChi.mat')
+        labels = pd.DataFrame(data_file['label'].flatten())[0]
+        feat_data = pd.DataFrame(data_file['features'].todense().A)
+        # load the preprocessed adj_lists
+        with open(prefix + 'yelp_homo_adjlists.pickle', 'rb') as file:
+            homo = pickle.load(file)
+        file.close()
+        index = list(range(len(labels)))
+        train_idx, test_idx, y_train, y_test = train_test_split(index, labels, stratify=labels, test_size=test_size,
+                                                                random_state=2, shuffle=True)
+        src = []
+        tgt = []
+        for i in homo:
+            for j in homo[i]:
+                src.append(i)  # src是出发点
+                tgt.append(j)  # tgt是被指向点
+        src = np.array(src)
+        tgt = np.array(tgt)
+        g = dgl.graph((src, tgt))
+        g.ndata['label'] = torch.from_numpy(labels.to_numpy()).to(torch.long)
+        g.ndata['feat'] = torch.from_numpy(
+            feat_data.to_numpy()).to(torch.float32)
+        graph_path = prefix + "graph-{}.bin".format(dataset)
+        dgl.data.utils.save_graphs(graph_path, [g])
 
-    sampled_df = feat_df[feat_df['Labels'] != 2]
-    sampled_df = sampled_df.reset_index(drop=True)
-
-    all_nodes = pd.concat([sampled_df['Source'], sampled_df['Target']]).unique()
-    encoder = LabelEncoder().fit(all_nodes)  
-    encoded_source = encoder.transform(sampled_df['Source'])
-    encoded_tgt = encoder.transform(sampled_df['Target'])  
-
-    loc_enc = OneHotEncoder()
-    loc_feature = np.array(loc_enc.fit_transform(
-        sampled_df['Location'].to_numpy()[:, np.newaxis]).todense())
-    loc_feature = np.hstack(
-        [zscore(sampled_df['Amount'].to_numpy())[:, np.newaxis], loc_feature])
-
-    g = dgl.DGLGraph()
-    g.add_edges(encoded_source, encoded_tgt, data={
-                "feat": torch.from_numpy(loc_feature).to(torch.float32)})
-    # g = dgl.add_self_loop(g)
-    return features, labels, g
+    elif dataset == "amazon":
+        cat_features = []
+        data_file = loadmat(prefix + 'Amazon.mat')
+        labels = pd.DataFrame(data_file['label'].flatten())[0]
+        feat_data = pd.DataFrame(data_file['features'].todense().A)
+        # load the preprocessed adj_lists
+        with open(prefix + 'amz_homo_adjlists.pickle', 'rb') as file:
+            homo = pickle.load(file)
+        file.close()
+        index = list(range(3305, len(labels)))
+        train_idx, test_idx, y_train, y_test = train_test_split(index, labels[3305:], stratify=labels[3305:],
+                                                                test_size=test_size, random_state=2, shuffle=True)
+        src = []
+        tgt = []
+        for i in homo:
+            for j in homo[i]:
+                src.append(i)
+                tgt.append(j)
+        src = np.array(src)
+        tgt = np.array(tgt)
+        g = dgl.graph((src, tgt))
+        g.ndata['label'] = torch.from_numpy(labels.to_numpy()).to(torch.long)
+        g.ndata['feat'] = torch.from_numpy(
+            feat_data.to_numpy()).to(torch.float32)
+        graph_path = prefix + "graph-{}.bin".format(dataset)
+        dgl.data.utils.save_graphs(graph_path, [g])
+     return features, labels, g
