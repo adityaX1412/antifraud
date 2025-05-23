@@ -106,7 +106,7 @@ def stagn_main(
         raise NotImplementedError("Not supported mode.")
 
 
-def load_stagn_data(args: dict):
+def load_stagn_data(dataset: str,args: dict):
     if dataset == "S-FFSD":
         # load S-FFSD dataset for base models
         data_path = "data/S-FFSD.csv"
