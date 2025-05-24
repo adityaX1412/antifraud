@@ -155,9 +155,10 @@ def load_stagn_data(dataset: str, test_size: float, args: dict):
         labels = pd.DataFrame(data_file['label'].flatten())[0]
         feat_data = pd.DataFrame(data_file['features'].todense().A)
         
-        # For compatibility with S-FFSD format, create features array
-        # This might need adjustment based on your specific requirements
-        features = feat_data.to_numpy()
+        # Convert 2D features to 3D format expected by stagn_train_2d
+        # Add a time dimension (assuming single time window)
+        features_2d = feat_data.to_numpy()
+        features = np.expand_dims(features_2d, axis=2)  # Shape: (samples, features, 1)
         labels = labels.to_numpy()
         
         # Load the preprocessed adj_lists
@@ -192,7 +193,8 @@ def load_stagn_data(dataset: str, test_size: float, args: dict):
         
         # For compatibility with S-FFSD format, create features array
         # Note: Using only the subset starting from index 3305 as in original code
-        features = feat_data.iloc[3305:].to_numpy()
+        features_2d = feat_data.iloc[3305:].to_numpy()
+        features = np.expand_dims(features_2d, axis=2)  # Shape: (samples, features, 1)
         subset_labels = labels.iloc[3305:].to_numpy()
         
         # Load the preprocessed adj_lists
