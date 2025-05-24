@@ -108,6 +108,7 @@ def stagn_main(
 
 
 def load_stagn_data(dataset: str,args: dict):
+    prefix = os.path.join(os.path.dirname(__file__), "..", "..", "data/")
     if dataset == "S-FFSD":
         # load S-FFSD dataset for base models
         data_path = "data/S-FFSD.csv"
