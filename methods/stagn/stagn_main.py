@@ -107,7 +107,7 @@ def stagn_main(
         raise NotImplementedError("Not supported mode.")
 
 
-def load_stagn_data(dataset: str,args: dict):
+def load_stagn_data(dataset: str, test_size: float,args: dict):
     prefix = os.path.join(os.path.dirname(__file__), "..", "..", "data/")
     if dataset == "S-FFSD":
         # load S-FFSD dataset for base models
