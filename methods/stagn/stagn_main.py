@@ -12,7 +12,7 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.metrics import roc_auc_score, f1_score, average_precision_score
 from feature_engineering.data_engineering import span_data_2d
 from scipy.io import loadmat
-
+import pickle
 
 def to_pred(logits: torch.Tensor) -> list:
     with torch.no_grad():
