@@ -193,27 +193,40 @@ def load_stagn_data(dataset: str, test_size: float, args: dict):
         # For compatibility with S-FFSD format, create features array
         # Note: Using only the subset starting from index 3305 as in original code
         features = feat_data.iloc[3305:].to_numpy()
-        labels = labels.iloc[3305:].to_numpy()
+        subset_labels = labels.iloc[3305:].to_numpy()
         
         # Load the preprocessed adj_lists
         with open(os.path.join(prefix, 'amz_homo_adjlists.pickle'), 'rb') as file:
             homo = pickle.load(file)
         
-        # Create edges from adjacency lists
+        # Filter edges to only include nodes that have labels (indices >= 3305)
+        valid_nodes = set(range(3305, len(labels)))
         src = []
         tgt = []
         for i in homo:
-            for j in homo[i]:
-                src.append(i)
-                tgt.append(j)
+            if i in valid_nodes:
+                for j in homo[i]:
+                    if j in valid_nodes:
+                        # Remap node indices to start from 0
+                        src.append(i - 3305)
+                        tgt.append(j - 3305)
         
         src = np.array(src)
         tgt = np.array(tgt)
         
-        # Create DGL graph
-        g = dgl.graph((src, tgt))
-        g.ndata['label'] = torch.from_numpy(labels).to(torch.long)
-        g.ndata['feat'] = torch.from_numpy(feat_data.to_numpy()).to(torch.float32)
+        # Create DGL graph with remapped node indices
+        if len(src) > 0:  # Only create graph if there are edges
+            g = dgl.graph((src, tgt))
+        else:
+            # Create empty graph with correct number of nodes
+            g = dgl.graph(([], []))
+            g.add_nodes(len(subset_labels))
+        
+        g.ndata['label'] = torch.from_numpy(subset_labels).to(torch.long)
+        g.ndata['feat'] = torch.from_numpy(feat_data.iloc[3305:].to_numpy()).to(torch.float32)
+        
+        # Update labels for return value
+        labels = subset_labels
         
         # Save graph
         graph_path = os.path.join(prefix, "graph-{}.bin".format(dataset))
