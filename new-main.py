@@ -14,7 +14,7 @@ import argparse
 import time
 from tqdm import tqdm
 
-from methods.stagn.sttagn_2d import stagn_2d_model
+from methods.stagn.stagn_2d import stagn_2d_model
 
 def set_seed(seed):
     """Set random seeds for reproducibility"""
