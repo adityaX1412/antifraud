@@ -32,7 +32,7 @@ def load_data(dataset_name, data_dir):
     print(f"Loading {dataset_name} dataset...")
     
     # Load DGL graph
-    graph_path = os.path.join(data_dir, f"/kaggle/input/amazon-graph/graph-amazon.bin")
+    graph_path = os.path.join(data_dir, f"graph-{dataset_name}.bin")
     graphs, _ = dgl.load_graphs(graph_path)
     graph = graphs[0]
     
