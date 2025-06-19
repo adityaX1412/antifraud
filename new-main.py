@@ -32,12 +32,12 @@ def load_data(dataset_name, data_dir):
     print(f"Loading {dataset_name} dataset...")
     
     # Load DGL graph
-    graph_path = os.path.join(data_dir, f"antifraud/data/graph-{dataset_name}.bin")
+    graph_path = "/kaggle/input/amazon-graph/graph-amazon.bin"
     graphs, _ = dgl.load_graphs(graph_path)
     graph = graphs[0]
     
     # Load neighbor features
-    neighbor_feat_path = os.path.join(data_dir, f"antifraud/data/{dataset_name}_neigh_feat.csv")
+    neighbor_feat_path = "/kaggle/input/amazon-neigh/amazon_neigh_feat.csv"
     neighbor_feats = pd.read_csv(neighbor_feat_path)
     
     print(f"Graph info: {graph}")
