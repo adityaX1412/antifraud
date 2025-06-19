@@ -292,6 +292,15 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.5)
+
+    # Dummy forward pass to initialize LazyModules
+    with torch.no_grad():
+        dummy_features = torch.zeros((1, args.time_windows, feat_dim), device=device)
+        dummy_graph = dgl.node_subgraph(graph, [0])  # Tiny dummy graph with 1 node
+        dummy_graph = dummy_graph.to(device)
+
+        model(dummy_features, dummy_graph)  # Forward pass
+
     
     print(f"Model initialized with {sum(p.numel() for p in model.parameters())} parameters")
     
