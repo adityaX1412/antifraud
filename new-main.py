@@ -247,7 +247,7 @@ def main():
     edge_features = create_edge_features(graph, device)
     graph.edata['feat'] = edge_features
     
-    labels = labels.cpu
+    labels = labels.cpu()
     print(f"Temporal features shape: {temporal_features.shape}")
     print(f"Feature dimension: {feat_dim}")
     print(f"Number of classes: {len(np.unique(labels))}")
