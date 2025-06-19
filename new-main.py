@@ -173,6 +173,9 @@ class GraphDataLoader:
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.n_samples = len(features)
+        self.features = torch.tensor(features, dtype=torch.float32, device=graph.device)
+        self.labels = torch.tensor(labels, dtype=torch.long, device=graph.device)
+
         
     def __iter__(self):
         indices = np.arange(self.n_samples)
@@ -181,8 +184,8 @@ class GraphDataLoader:
             
         for i in range(0, self.n_samples, self.batch_size):
             batch_indices = indices[i:i + self.batch_size]
-            batch_features = torch.FloatTensor(self.features[batch_indices])
-            batch_labels = torch.LongTensor(self.labels[batch_indices])
+            batch_features = self.features[batch_indices]
+            batch_labels = self.labels[batch_indices]
             
             # Create subgraph for this batch
             subgraph = dgl.node_subgraph(self.graph, batch_indices)
