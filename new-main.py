@@ -251,7 +251,6 @@ def main():
     print(f"Temporal features shape: {temporal_features.shape}")
     print(f"Feature dimension: {feat_dim}")
     print(f"Number of classes: {len(np.unique(labels))}")
-    print(f"Class distribution: {np.bincount(labels)}")
     
     # Split data
     indices = np.arange(len(temporal_features))
