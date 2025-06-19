@@ -186,6 +186,7 @@ class GraphDataLoader:
             
             # Create subgraph for this batch
             subgraph = dgl.node_subgraph(self.graph, batch_indices)
+            subgraph = subgraph.to(self.graph.device)
             
             yield batch_features, batch_labels, subgraph
     
