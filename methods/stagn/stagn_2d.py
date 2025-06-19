@@ -101,7 +101,7 @@ class stagn_2d_model(nn.Module):
             nn.LazyLinear(24),
             nn.ReLU())
 
-        self.linears2 = nn.LazyLinear(self.num_classes)
+        self.linears2 = nn.LazyLinear(162,self.num_classes)
 
         # gnn for transaction graph
         self.gcn = TransactionGCN(
