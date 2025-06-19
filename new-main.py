@@ -45,11 +45,11 @@ def load_data(dataset_name, data_dir):
     
     return graph, neighbor_feats
 
-def prepare_features(graph, neighbor_feats, time_windows_dim=8):
+def prepare_features(graph, neighbor_feats, device, time_windows_dim=8):
     """Prepare features for STAGN model"""
     
     # Get node features and labels
-    node_features = graph.ndata['feat'].cpu().numpy()  
+    node_features = graph.ndata['feat'].cpu().numpy()
     labels = graph.ndata['label'].cpu().numpy()
     neighbor_features = neighbor_feats.values
     
@@ -68,9 +68,11 @@ def prepare_features(graph, neighbor_feats, time_windows_dim=8):
         noise_factor = 0.01 * t  # Small temporal variation
         temporal_features[:, t, :] = combined_features + np.random.normal(0, noise_factor, combined_features.shape)
     
+    temporal_features = torch.tensor(temporal_features, device=device)
+    labels = torch.tensor(labels, device=device)
     return temporal_features, labels, feat_dim
 
-def create_edge_features(graph):
+def create_edge_features(graph, device):
     """Create edge features for the graph"""
     # Simple edge features based on node degrees and labels
     src_nodes, dst_nodes = graph.edges()
@@ -98,9 +100,9 @@ def train_epoch(model, train_loader, optimizer, criterion, device):
     all_labels = []
     
     for batch_idx, (features, labels, graph) in enumerate(train_loader):
-        #features = features.to(device)
-        #labels = labels.to(device)
-        #graph = graph.to(device)
+        features = features.to(device)
+        labels = labels.to(device)
+        graph = graph.to(device)
         
         optimizer.zero_grad()
         outputs = model(features, graph)
@@ -232,13 +234,17 @@ def main():
     # Load data
     graph, neighbor_feats = load_data(args.dataset, data_dir)
     
+    # IMPORTANT: Move graph to device BEFORE creating edge features or initializing model
+    print(f"Moving graph to device: {device}")
+    graph = graph.to(device)
+    
     # Prepare features
     temporal_features, labels, feat_dim = prepare_features(
-        graph, neighbor_feats, args.time_windows
+        graph, neighbor_feats, device, args.time_windows
     )
     
-    # Create edge features
-    edge_features = create_edge_features(graph)
+    # Create edge features (now that graph is on the correct device)
+    edge_features = create_edge_features(graph, device)
     graph.edata['feat'] = edge_features
     
     print(f"Temporal features shape: {temporal_features.shape}")
@@ -270,14 +276,15 @@ def main():
         shuffle=False
     )
     
-    # Initialize model
+    # Initialize model (graph is already on correct device)
+    print("Initializing STAGN model...")
     num_classes = len(np.unique(labels))
     model = stagn_2d_model(
         time_windows_dim=args.time_windows,
         feat_dim=feat_dim,
         num_classes=num_classes,
         attention_hidden_dim=args.hidden_dim,
-        g=graph,
+        g=graph,  # Graph is already on correct device
         device=device
     ).to(device)
     
